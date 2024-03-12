@@ -1,9 +1,13 @@
-import { cloneDeep } from 'lodash';
-import { CellObject, ColInfo, WorkSheet, utils, write } from 'xlsx-js-style';
-import { ICellRowSpanConfig, IExcelWorkerProps, IHeaderColumn } from '../models';
+import { cloneDeep } from "lodash";
+import { CellObject, ColInfo, WorkSheet, utils, write } from "xlsx-js-style";
+import {
+  ICellRowSpanConfig,
+  IExcelWorkerProps,
+  IHeaderColumn,
+} from "../models";
 
-const CELL_ROW_SPAN_FIELD = 'cellRowSpan';
-const SINGLE_BORDER_STYLE = { style: 'thin' };
+const CELL_ROW_SPAN_FIELD = "cellRowSpan";
+const SINGLE_BORDER_STYLE = { style: "thin" };
 const CELL_BORDER_STYLE = {
   top: SINGLE_BORDER_STYLE,
   right: SINGLE_BORDER_STYLE,
@@ -11,19 +15,20 @@ const CELL_BORDER_STYLE = {
   left: SINGLE_BORDER_STYLE,
 };
 const HEADER_CELL_STYLE = {
-  alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
-  fill: { fgColor: { rgb: '7a7a7a' } },
-  font: { name: 'Malgun Gothic', sz: 11, color: { rgb: 'ffffff' }, bold: true },
+  alignment: { vertical: "center", horizontal: "center", wrapText: true },
+  fill: { fgColor: { rgb: "7a7a7a" } },
+  font: { name: "Malgun Gothic", sz: 11, color: { rgb: "ffffff" }, bold: true },
   border: CELL_BORDER_STYLE,
 };
 
 export const cellRowSpanColumn: IHeaderColumn = {
   id: 0, // id is not important
-  title: '',
+  title: "",
   field: CELL_ROW_SPAN_FIELD,
 };
 
 self.onmessage = (evt: MessageEvent) => {
+  console.log("run web worker");
   const url = generateExcelExportUrl(evt.data);
   postMessage({ url });
 };
@@ -55,17 +60,17 @@ const addCellRowSpanIntoDataExport = (data: any, fieldCondition: string) => {
 const generateExcelExportUrl = (props: IExcelWorkerProps) => {
   const dataExcel = convertDataToExcel(props);
   const workbook = utils.book_new();
-  utils.book_append_sheet(workbook, dataExcel, 'sheet1');
+  utils.book_append_sheet(workbook, dataExcel, "sheet1");
   const excelBuffer = write(workbook, {
-    bookType: 'xlsx',
-    type: 'array',
+    bookType: "xlsx",
+    type: "array",
     compression: true,
     cellStyles: true,
     cellDates: true,
   });
 
   const workbookBlob = new Blob([excelBuffer], {
-    type: 'application/octet-stream',
+    type: "application/octet-stream",
   });
 
   return URL.createObjectURL(workbookBlob);
@@ -80,10 +85,17 @@ const convertDataToExcel = (props: IExcelWorkerProps) => {
   dataExport = formatData(dataExport, flattedColumns, depthLength);
   dataExport = addHeaderMappingIntoDataExcel(dataExport, excelColumns);
 
-  const dataExcel: WorkSheet = utils.aoa_to_sheet(dataExport, { dateNF: 'yyyy-mm-dd' });
-  dataExcel['!merges'] = generateExcelMergedConfigs(dataExport, flattedColumns, excelColumns, depthLength);
-  dataExcel['!cols'] = generateColumnWidthConfigs(flattedColumns);
-  dataExcel['!rows'] = [{ hidden: true }];
+  const dataExcel: WorkSheet = utils.aoa_to_sheet(dataExport, {
+    dateNF: "yyyy-mm-dd",
+  });
+  dataExcel["!merges"] = generateExcelMergedConfigs(
+    dataExport,
+    flattedColumns,
+    excelColumns,
+    depthLength
+  );
+  dataExcel["!cols"] = generateColumnWidthConfigs(flattedColumns);
+  dataExcel["!rows"] = [{ hidden: true }];
 
   return dataExcel;
 };
@@ -94,11 +106,17 @@ const flatColumns = (columns: IHeaderColumn[]): IHeaderColumn[] =>
     return item;
   });
 
-const calculateColumnHeaderDepthLength = (columns: IHeaderColumn[], level = 0) => {
+const calculateColumnHeaderDepthLength = (
+  columns: IHeaderColumn[],
+  level = 0
+) => {
   let depthLength = level;
   columns.forEach((col: IHeaderColumn) => {
     if (col.children && col.children.length > 0) {
-      const nestedLevel = calculateColumnHeaderDepthLength(col.children, level + 1);
+      const nestedLevel = calculateColumnHeaderDepthLength(
+        col.children,
+        level + 1
+      );
       if (nestedLevel > depthLength) {
         depthLength = nestedLevel;
       }
@@ -107,14 +125,20 @@ const calculateColumnHeaderDepthLength = (columns: IHeaderColumn[], level = 0) =
   return depthLength;
 };
 
-const convertDataToAoa = (data: any[], columns: IHeaderColumn[], mergedFieldCondition?: string) => {
-  const mergedData = mergedFieldCondition ? addCellRowSpanIntoDataExport(data, mergedFieldCondition) : data;
+const convertDataToAoa = (
+  data: any[],
+  columns: IHeaderColumn[],
+  mergedFieldCondition?: string
+) => {
+  const mergedData = mergedFieldCondition
+    ? addCellRowSpanIntoDataExport(data, mergedFieldCondition)
+    : data;
   const dataExport = mergedData.map((item: any) => {
     const row: CellObject[] = [];
     columns.forEach((col: IHeaderColumn) => {
       const cell: CellObject = {
-        t: 's',
-        v: item[col.field] ?? '',
+        t: "s",
+        v: item[col.field] ?? "",
       };
       row.push(cell);
     });
@@ -124,15 +148,23 @@ const convertDataToAoa = (data: any[], columns: IHeaderColumn[], mergedFieldCond
   return dataExport;
 };
 
-const formatData = (data: any, columns: IHeaderColumn[], depthLength: number) => {
+const formatData = (
+  data: any,
+  columns: IHeaderColumn[],
+  depthLength: number
+) => {
   const fieldRow: CellObject[] = [];
   const emptyRow: CellObject[] = [];
   const formattedData = data.map((row: CellObject[], rowIdx: number) => {
     const cellRowSpan = row[row.length - 1].v;
     columns.forEach((col: IHeaderColumn, colIdx: number) => {
       const cellStyle = {
-        alignment: { vertical: 'center', horizontal: col.excelAlign ?? 'center', wrapText: true },
-        font: { name: 'Malgun Gothic', sz: 11 },
+        alignment: {
+          vertical: "center",
+          horizontal: col.excelAlign ?? "center",
+          wrapText: true,
+        },
+        font: { name: "Malgun Gothic", sz: 11 },
         border: CELL_BORDER_STYLE,
       };
       row[colIdx].s = cellStyle;
@@ -140,15 +172,18 @@ const formatData = (data: any, columns: IHeaderColumn[], depthLength: number) =>
       if (col.isMerge && !cellRowSpan) row[colIdx].v = 0;
 
       if (rowIdx === 0) {
-        fieldRow.push({ t: 's', v: col.field, s: HEADER_CELL_STYLE });
-        emptyRow.push({ t: 's', v: '', s: HEADER_CELL_STYLE });
+        fieldRow.push({ t: "s", v: col.field, s: HEADER_CELL_STYLE });
+        emptyRow.push({ t: "s", v: "", s: HEADER_CELL_STYLE });
       }
     });
 
     return row;
   });
 
-  formattedData.unshift(fieldRow, ...Array.from({ length: depthLength + 1 }, () => cloneDeep(emptyRow)));
+  formattedData.unshift(
+    fieldRow,
+    ...Array.from({ length: depthLength + 1 }, () => cloneDeep(emptyRow))
+  );
   return formattedData;
 };
 
@@ -156,35 +191,35 @@ const formatCell = (col: IHeaderColumn, cell: CellObject) => {
   const regex = /^\d+(\.\d+)?\s*%$/;
   let formattedCell = cell;
 
-  if (regex.test(`${formattedCell.v ?? ''}`)) {
+  if (regex.test(`${formattedCell.v ?? ""}`)) {
     formattedCell = formatPercentCell(cell);
-  } else if (col.type === 'currency') {
+  } else if (col.type === "currency") {
     formattedCell = formatCurrencyCell(cell, col.excelFraction);
-  } else if (col.type === 'date') {
-    formattedCell.z = 'yyyy-mm-dd';
+  } else if (col.type === "date") {
+    formattedCell.z = "yyyy-mm-dd";
   }
 
   return formattedCell;
 };
 
 const formatPercentCell = (cell: CellObject) => {
-  const percentValue = Number(`${cell.v ?? 0}`.replace('%', ''));
-  cell.t = 'n';
+  const percentValue = Number(`${cell.v ?? 0}`.replace("%", ""));
+  cell.t = "n";
   cell.v = percentValue / 100;
-  cell.z = Number.isInteger(percentValue) ? '0%' : '0.00%';
+  cell.z = Number.isInteger(percentValue) ? "0%" : "0.00%";
 
   return cell;
 };
 
 const formatCurrencyCell = (cell: CellObject, excelFraction?: number) => {
-  const currencyValue = Number(`${cell.v ?? 0}`.replace(/,/g, ''));
-  cell.t = 'n';
+  const currencyValue = Number(`${cell.v ?? 0}`.replace(/,/g, ""));
+  cell.t = "n";
   cell.v = currencyValue;
-  cell.z = Number.isInteger(currencyValue) ? '#,##0' : '#,##0.00';
-  cell.s.alignment.horizontal = 'right';
+  cell.z = Number.isInteger(currencyValue) ? "#,##0" : "#,##0.00";
+  cell.s.alignment.horizontal = "right";
 
   if (excelFraction) {
-    cell.z = `#,##0.${'0'.repeat(excelFraction)}`;
+    cell.z = `#,##0.${"0".repeat(excelFraction)}`;
   }
 
   return cell;
@@ -201,11 +236,14 @@ const generateColumnWidthConfigs = (columns: IHeaderColumn[]) => {
   return columnWidthConfigs;
 };
 
-const addHeaderMappingIntoDataExcel = (dataExport: any[], columns: IHeaderColumn[]) => {
+const addHeaderMappingIntoDataExcel = (
+  dataExport: any[],
+  columns: IHeaderColumn[]
+) => {
   let columnIndex = 0;
 
   const recursive = (col: IHeaderColumn, depth: number = 0) => {
-    dataExport[depth + 1][columnIndex].v = col.title.replaceAll('<br/>', ' ');
+    dataExport[depth + 1][columnIndex].v = col.title.replaceAll("<br/>", " ");
 
     if (!col.children?.length) {
       columnIndex += 1;
@@ -230,12 +268,18 @@ const generateExcelMergedConfigs = (
   depthLength: number
 ) => {
   const bodyMergedConfig = generateBodyMergedConfigs(data, flattedColumns);
-  const headerNestedMergeConfigs = generateHeaderNestedMergeConfigs(excelColumns, depthLength);
+  const headerNestedMergeConfigs = generateHeaderNestedMergeConfigs(
+    excelColumns,
+    depthLength
+  );
 
   return bodyMergedConfig.concat(headerNestedMergeConfigs);
 };
 
-const generateHeaderNestedMergeConfigs = (columns: IHeaderColumn[], depthLength: number) => {
+const generateHeaderNestedMergeConfigs = (
+  columns: IHeaderColumn[],
+  depthLength: number
+) => {
   const headerNestedMergedConfigs: any = [];
   let columnIndex = 0;
 
@@ -305,7 +349,7 @@ const generateCellRowSpanConfigs = (data: any) => {
   const result: ICellRowSpanConfig[] = [];
   data.forEach((row: CellObject[], idx: number) => {
     const cellRowSpan = row[row.length - 1].v;
-    if (cellRowSpan && typeof cellRowSpan === 'number' && cellRowSpan > 1) {
+    if (cellRowSpan && typeof cellRowSpan === "number" && cellRowSpan > 1) {
       result.push({ key: idx, distance: cellRowSpan - 1 });
     }
   });

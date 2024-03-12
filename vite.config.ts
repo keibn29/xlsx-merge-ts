@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
-import dts from 'vite-plugin-dts'
+import dts from "vite-plugin-dts";
 import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
@@ -16,9 +16,15 @@ export default defineConfig({
       output: {
         globals: {
           react: "React",
+          'react-dom': 'ReactDOM',
         },
       },
     },
   },
-  plugins: [react(), dts({ include: ["lib"] })],
+  plugins: [
+    react(),
+    dts({
+      insertTypesEntry: true,
+    }),
+  ],
 });
