@@ -16,7 +16,7 @@ export default defineConfig({
       output: {
         globals: {
           react: "React",
-          'react-dom': 'ReactDOM',
+          "react-dom": "ReactDOM",
         },
       },
     },
@@ -28,6 +28,6 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    exclude: ['three-gpu-pathtracer']
-  }
+    exclude: ["worker"],
+  },
 });
