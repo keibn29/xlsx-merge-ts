@@ -40,8 +40,11 @@ const ExcelExport = (props: IProps) => {
     []
   );
 
+  const url = new URL("../workers/excel.ts", import.meta.url);
+  console.log("url", url);
+  console.log("excelWorker", excelWorker);
+
   const handleExportExcel = () => {
-    console.log("heello");
     if (!window.Worker) return;
     if (isEmpty(data)) {
       onNotify();
