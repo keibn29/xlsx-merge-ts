@@ -28,7 +28,7 @@
 // };
 
 self.onmessage = (evt: MessageEvent) => {
-  console.log("run web worker");
+  console.log("run web worker", evt.data);
   // const url = generateExcelExportUrl(evt.data);
   // postMessage({ url });
 };
