@@ -1,6 +1,7 @@
 import { Children, cloneElement, useEffect, useMemo } from "react";
 import { IExcelWorkerProps, IHeaderColumn } from "../models";
 import { isEmpty } from "lodash";
+import ExcelWorker from "../workers/excel?worker";
 
 interface IProps extends IExcelWorkerProps {
   data: any[];
@@ -32,13 +33,14 @@ const ExcelExport = (props: IProps) => {
       },
     })
   );
-  const excelWorker = useMemo(
-    () =>
-      new Worker(new URL("../workers/excel.ts", import.meta.url), {
-        type: "module",
-      }),
-    []
-  );
+  // const excelWorker = useMemo(
+  //   () =>
+  //     new Worker(new URL("../workers/excel.ts", import.meta.url), {
+  //       type: "module",
+  //     }),
+  //   []
+  // );
+  const excelWorker = useMemo(() => new ExcelWorker(), []);
 
   const url = new URL("../workers/excel.ts", import.meta.url);
   console.log("url", url);

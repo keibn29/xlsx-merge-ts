@@ -356,5 +356,3 @@ const generateCellRowSpanConfigs = (data: any) => {
 
   return result;
 };
-
-export default {};

@@ -28,6 +28,6 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    exclude: ["worker"],
+    exclude: ["three-gpu-pathtracer"],
   },
 });
