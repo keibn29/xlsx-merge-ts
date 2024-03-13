@@ -41,10 +41,7 @@ const ExcelExport = (props: IProps) => {
   //   []
   // );
   const excelWorker = useMemo(() => new ExcelWorker(), []);
-
-  const url = new URL("../workers/excel.ts", import.meta.url);
-  console.log("url", url);
-  console.log("excelWorker", excelWorker);
+  console.log("0.1.6");
 
   const handleExportExcel = () => {
     if (!window.Worker) return;
