@@ -1,52 +1,47 @@
-import { Children, cloneElement, useEffect, useMemo } from "react";
-import { IExcelWorkerProps, IHeaderColumn } from "../models";
+import { Children, cloneElement, useEffect, useMemo, useState } from "react";
+import { IExcelWorkerProps } from "../models";
 import { isEmpty } from "lodash";
-import ExcelWorker from "../workers/excel?worker";
+import ExcelWorker from "../workers/excel?worker&inline";
 
-interface IProps extends IExcelWorkerProps {
-  data: any[];
-  columns: IHeaderColumn[];
+interface IExcelExport extends IExcelWorkerProps {
   fileName: string;
-  mergedFieldCondition: string;
+  children: JSX.Element;
+  isConvertDataBeforeExport?: boolean;
   onLoading: () => void;
   onSuccess: () => void;
-  onNotify: () => void;
-  children: JSX.Element;
+  onEmpty: () => void;
 }
 
-const ExcelExport = (props: IProps) => {
-  console.log("0.1.8");
+const ExcelExport = (props: IExcelExport) => {
   const {
     data,
     columns,
+    config,
     fileName,
     mergedFieldCondition,
+    children,
+    isConvertDataBeforeExport = false,
     onLoading,
     onSuccess,
-    onNotify,
-    children,
+    onEmpty,
   } = props;
+  const [initialized, setInitialized] = useState(false);
+  const excelWorker = useMemo(() => new ExcelWorker(), []);
   const enhancedChildren = Children.map(children, (child) =>
     cloneElement(child, {
       onClick: () => {
         !!child.props?.onClick && child.props.onClick();
-        handleExportExcel();
+        if (!isConvertDataBeforeExport) {
+          handleExportExcel();
+        }
       },
     })
   );
-  // const excelWorker = useMemo(
-  //   () =>
-  //     new Worker(new URL("../workers/excel.ts", import.meta.url), {
-  //       type: "module",
-  //     }),
-  //   []
-  // );
-  const excelWorker = useMemo(() => new ExcelWorker(), []);
 
   const handleExportExcel = () => {
-    if (!window.Worker) return;
+    if (!ExcelWorker) return;
     if (isEmpty(data)) {
-      onNotify();
+      onEmpty();
       return;
     }
 
@@ -55,6 +50,7 @@ const ExcelExport = (props: IProps) => {
       const excelWorkerProps: IExcelWorkerProps = {
         data,
         columns,
+        config,
         mergedFieldCondition,
       };
       excelWorker.postMessage(excelWorkerProps);
@@ -62,7 +58,7 @@ const ExcelExport = (props: IProps) => {
   };
 
   useEffect(() => {
-    if (window.Worker) {
+    if (ExcelWorker) {
       excelWorker.onmessage = (evt: MessageEvent) => {
         const a = document.createElement("a");
         a.download = `${fileName}.xlsx`;
@@ -74,6 +70,18 @@ const ExcelExport = (props: IProps) => {
       };
     }
   }, [excelWorker, fileName]);
+
+  useEffect(() => {
+    if (!initialized) {
+      setInitialized(true);
+      return;
+    }
+    if (!isConvertDataBeforeExport) {
+      return;
+    }
+
+    handleExportExcel();
+  }, [data]);
 
   return enhancedChildren;
 };

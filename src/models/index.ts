@@ -22,6 +22,7 @@ export interface IHeaderColumn extends IColumn {
   excelWidth?: number;
   excelFraction?: number;
   isMerge?: boolean;
+  [key: number | string]: any;
 }
 
 export interface ICellRowSpanConfig {
@@ -29,8 +30,17 @@ export interface ICellRowSpanConfig {
   distance: number;
 }
 
+export interface IExcelConfig {
+  alignKey: string;
+  widthKey: string;
+  mergedKey: string;
+  fractionKey: string;
+  unit?: 'wpx' | 'wch';
+}
+
 export interface IExcelWorkerProps {
   data: any[];
   columns: IHeaderColumn[];
+  config: IExcelConfig;
   mergedFieldCondition?: string;
 }

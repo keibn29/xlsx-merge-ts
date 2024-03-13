@@ -27,7 +27,4 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
-  optimizeDeps: {
-    exclude: ["three-gpu-pathtracer"],
-  },
 });
