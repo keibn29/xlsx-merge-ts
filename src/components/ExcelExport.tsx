@@ -15,6 +15,7 @@ interface IProps extends IExcelWorkerProps {
 }
 
 const ExcelExport = (props: IProps) => {
+  console.log("0.1.7");
   const {
     data,
     columns,
@@ -41,7 +42,6 @@ const ExcelExport = (props: IProps) => {
   //   []
   // );
   const excelWorker = useMemo(() => new ExcelWorker(), []);
-  console.log("0.1.6");
 
   const handleExportExcel = () => {
     if (!window.Worker) return;
