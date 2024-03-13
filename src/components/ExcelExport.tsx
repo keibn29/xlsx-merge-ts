@@ -15,7 +15,7 @@ interface IProps extends IExcelWorkerProps {
 }
 
 const ExcelExport = (props: IProps) => {
-  console.log("0.1.7");
+  console.log("0.1.8");
   const {
     data,
     columns,
