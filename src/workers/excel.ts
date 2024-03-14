@@ -21,8 +21,10 @@ const HEADER_CELL_STYLE = {
   font: { name: "Malgun Gothic", sz: 11, color: { rgb: "ffffff" }, bold: true },
   border: CELL_BORDER_STYLE,
 };
+const WPX_WIDTH_DEFAULT = 80;
+const WCH_WIDTH_DEFAULT = 14;
 
-export const cellRowSpanColumn: IHeaderColumn = {
+const cellRowSpanColumn: IHeaderColumn = {
   id: 0, // id is not important
   title: "",
   field: CELL_ROW_SPAN_FIELD,
@@ -233,13 +235,23 @@ const generateColumnWidthConfigs = (
   columns: IHeaderColumn[],
   config: IExcelConfig
 ) => {
-  const columnWidthConfigs: ColInfo[] = columns.map((col: IHeaderColumn) =>
-    col.field === CELL_ROW_SPAN_FIELD
-      ? { hidden: true }
-      : {
-          [config.unit ?? "wpx"]: col[config.widthKey] ?? 14,
-        }
-  );
+  const {
+    widthKey,
+    unit = "wpx",
+    widthRate = 1,
+    widthDefault = unit === "wpx" ? WPX_WIDTH_DEFAULT : WCH_WIDTH_DEFAULT,
+  } = config;
+  const columnWidthConfigs: ColInfo[] = columns.map((col: IHeaderColumn) => {
+    const widthConfig =
+      col.field === CELL_ROW_SPAN_FIELD
+        ? { hidden: true }
+        : {
+            [unit]: col[widthKey] ? col[widthKey] * widthRate : widthDefault,
+          };
+
+    return widthConfig;
+  });
+
   return columnWidthConfigs;
 };
 

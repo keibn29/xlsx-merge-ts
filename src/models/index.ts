@@ -32,9 +32,11 @@ export interface ICellRowSpanConfig {
 
 export interface IExcelConfig {
   alignKey: string;
-  widthKey: string;
   mergedKey: string;
   fractionKey: string;
+  widthKey: string;
+  widthRate?: number;
+  widthDefault?: number;
   unit?: 'wpx' | 'wch';
 }
 
